@@ -41,3 +41,13 @@ You can plug an `audio` tensor as input to enable **voice cloning**.
 In this case, it is strongly recommended to provide a **transcript** of the input audio in the `input_audio_transcript` field to improve results.
 
 ![image](https://github.com/user-attachments/assets/9bac4077-9a71-4ee1-a279-0773bb51a75a)
+
+
+## Troubleshooting and side effects
+As stated in the requirement.txt file, you will have to install 2 python packages: **descript-audio-codec** and **soundfile**
+
+Under certain circonstances, **descript-audio-codec** installation could auomatically downgrade **protobuf** back into 3.19.6 which could make some other nodes crash on startup. If it ever happens, just upgrade protobuf by opening comfyUI terminal and run
+```
+pip install protobuf --upgrade
+```
+
