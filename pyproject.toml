@@ -10,6 +10,6 @@ Repository = "https://github.com/nobrainX2/comfyUI-customDia"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "nobrainx2"
 DisplayName = "comfyUI-customDia"
 Icon = ""
