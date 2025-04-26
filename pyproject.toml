@@ -1,0 +1,15 @@
+[project]
+name = "customdia"
+description = "This is a ComfyUI integration of the [a/Dia TTS model](https://github.com/nari-labs/dia/). Many thanks to nari-labs for their fantastic work."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["descript-audio-codec", "soundfile"]
+
+[project.urls]
+Repository = "https://github.com/nobrainX2/comfyUI-customDia"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "nobrainx2"
+DisplayName = "comfyUI-customDia"
+Icon = ""
