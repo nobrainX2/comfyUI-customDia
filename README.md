@@ -14,6 +14,8 @@ Store them in any subfolder under `/models/` — the path is not hardcoded, and 
 The original Dia API has been **slightly modified** to support **multi-channel audio inputs**.  
 This allows for stereo files or tensors provided directly by ComfyUI nodes.
 
+an extra node has been added to retime the output audio. See the example for usage (pitch preservation requires an extra package: librosa It's not in the requirements.txt to avoir intalling it for users who don't need that extra function)
+
 ## Usage
 
 This is an **output node**, meaning it can be used standalone and queued without connections.  
