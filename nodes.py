@@ -14,6 +14,7 @@ import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
 
+
 class DiaText2Speech:
     @classmethod
     def INPUT_TYPES(cls):
@@ -154,11 +155,76 @@ class DiaText2Speech:
         output_tensor = torch.from_numpy(generated_audio).unsqueeze(0).unsqueeze(0)
         return ({"waveform": output_tensor, "sample_rate": 44100},)
 
+class AudioRetimer:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "input_audio": ("AUDIO",),
+                "preserve_pitch": ("BOOLEAN", {"default": True}),
+                "speed": ("FLOAT", {"default": 1.0, "min": 0.3, "max": 3.0, "step": 0.01}),
+            },
+            "optional": {
+            },
+        }
+
+    RETURN_TYPES = ("AUDIO",)
+    RETURN_NAMES = ("audio",)
+    FUNCTION = "generate"
+    CATEGORY = "audio/dia"
+    OUTPUT_NODE = True
+
+    def generate(
+        self,
+        input_audio,
+        preserve_pitch,
+        speed,
+    ):
+        waveform = input_audio["waveform"]  # [1, 1, N]
+        sample_rate = input_audio["sample_rate"]
+
+        print(waveform.shape)
+        duration = len(waveform)
+        print(duration)
+
+        if not preserve_pitch:
+            new_sample_rate = int(sample_rate * speed)
+            slower_audio = torchaudio.functional.resample(waveform, new_sample_rate, sample_rate)
+
+            return ({"waveform": slower_audio, "sample_rate": sample_rate },)
+        else:
+            try:
+                import librosa
+            except ImportError:
+                raise ImportError("Librosa must be installed to enable pitch preservation open the terminal below and type pip install librosa ")
+
+            waveform_np = waveform.squeeze().cpu().numpy()
+
+            # time-stretching without pitch alteration
+            y_stretched = librosa.effects.time_stretch(waveform_np, rate=speed)
+
+            # Convert back into tensor
+            y_stretched_tensor = torch.tensor(y_stretched)
+
+            if y_stretched_tensor.ndim == 1:
+                # Mono : [N] → [1, 1, N]
+                y_stretched_tensor = y_stretched_tensor.unsqueeze(0).unsqueeze(0)
+            elif y_stretched_tensor.ndim == 2:
+                # Multi-canal : [C, N] → [1, C, N]
+                y_stretched_tensor = y_stretched_tensor.unsqueeze(0)
+            else:
+                raise ValueError(f"Unexpected tensor shape: {y_stretched_tensor.shape}")
+
+            return ({"waveform": y_stretched_tensor, "sample_rate": sample_rate},)
+
+
 
 NODE_CLASS_MAPPINGS = {
     "Dia text to speech": DiaText2Speech,
+    "Audio retimer": AudioRetimer,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "Dia text to speech": "Dia text to speech",
+    "Audio retimer": "Audio retimer",
 }
