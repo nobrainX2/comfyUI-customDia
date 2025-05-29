@@ -9,11 +9,26 @@ import soundfile as sf
 from .dia.model import Dia
 import folder_paths
 
+import numpy as np
+import random
+
 #avoid unnecessary errors being raised by comfyUI interface
 import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
+MAX_SEED = np.iinfo(np.int32).max
 
+def set_seed(seed: int):
+    """Sets the random seed for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    # Ensure deterministic behavior for cuDNN (if used)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 class DiaText2Speech:
     @classmethod
@@ -21,6 +36,7 @@ class DiaText2Speech:
         return {
             "required": {
                 "model_path": ("STRING", {"default": "models/Dia/dia-v0_1.pth"}),
+                "seed": ("INT", {"default": 12345, "min": 0, "max": MAX_SEED}),
                 "save_audio_file": ("BOOLEAN", {"default": True}),
                 "filename_prefix": ("STRING", {"default": "audio/dia"}),
                 "speech": (
@@ -78,6 +94,7 @@ class DiaText2Speech:
     def generate(
         self,
         model_path,
+        seed,
         save_audio_file,
         filename_prefix,
         speech,
@@ -93,6 +110,8 @@ class DiaText2Speech:
     ):
         config_path  = Path(model_path).with_name("config.json")
         model = Dia.from_local(config_path=config_path , checkpoint_path=model_path)
+
+        set_seed(seed)
 
         if input_audio is not None:
             waveform = input_audio["waveform"]  # [1, 2, N]
